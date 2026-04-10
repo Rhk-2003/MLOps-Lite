@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # The FastAPI Prediction Server
+  api:
+    image: python:3.10-slim
+    working_dir: /app
+    volumes:
+      - .:/app  # Maps your local folder to the container
+    ports:
+      - "8000:8000"
+    command: >
+      bash -c "pip install --no-cache-dir -r requirements.txt && 
+               uvicorn serve:app --host 0.0.0.0 --port 8000"
+
+  # The Background Drift Monitor & Retrainer
+  monitor:
+    image: python:3.10-slim
+    working_dir: /app
+    volumes:
+      - .:/app  # Shares the exact same files/artifacts with the API
+    command: >
+      bash -c "pip install --no-cache-dir -r requirements.txt && 
+               python monitor.py"
+    depends_on:
+      - api
